@@ -32,7 +32,7 @@ public class Server {
                     if (isValidMachineId(machineId)) {
                         out.println("400 MACHINE_FORMAT_OK");
                         // Pour l'instant on simule une machine disponible
-                        out.println("MACHINE_AVAILABLE");
+                        out.println("100 MACHINE_AVAILABLE");
                     } else {
                         out.println("401 MACHINE_FORMAT_KO");
                         continue;
@@ -43,7 +43,7 @@ public class Server {
                     if (isValidReservationId(reservationId)) {
                         out.println("400 RESERVATION_FORMAT_OK");
                         // Simulons que la réservation appartient bien au joueur
-                        out.println("RESERVATION_OK");
+                        out.println("100 RESERVATION_OK");
                     } else {
                         out.println("401 RESERVATION_FORMAT_KO");
                         continue;
@@ -53,7 +53,7 @@ public class Server {
                     String action = in.readLine();
                     if ("PLAY_3_CREDITS".equals(action)) {
                         // Pour l'instant, on simule simplement la décrémentation des crédits
-                        out.println("CREDITS_DECREMENTED");
+                        out.println("100 CREDITS_DECREMENTED");
                     }
 
                 } catch (IOException e) {
