@@ -17,6 +17,7 @@ public class Server {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connecte.");
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             ArrayList<String> lignesRecues = new ArrayList<>();
 
             // On remplit une ArrayList avec toutes les lignes envoyées par le client
@@ -26,6 +27,17 @@ public class Server {
                     break;
                 }
                 lignesRecues.add(line);
+            }
+
+            // Vérifier que la première ligne est bien "GET / ARKD/1.1"
+            if (lignesRecues.isEmpty() || !lignesRecues.get(0).equals("GET / ARKD/1.1")) {
+                // Si la ligne de requête n'est pas correcte, on envoie une erreur au client
+                out.println("ARKD/1.1 400 BAD REQUEST");
+                out.close();
+                in.close();
+                clientSocket.close();
+                serverSocket.close();
+                return;
             }
 
             // Variables pour stocker les informations extraites
@@ -70,7 +82,6 @@ public class Server {
             response.append("Access: 500 ACCESS_GRANTED\n");
 
             // Envoi de la réponse au client
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             out.println(response.toString());
 
             // On referme tout
