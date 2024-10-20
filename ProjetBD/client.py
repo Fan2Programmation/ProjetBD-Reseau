@@ -12,7 +12,7 @@ port = 8080
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
 # Le socket client se connecte
 client.connect((adresseIP, port))
-print("Connecté au serveur")
+print("Connecte au serveur")
 
 message = ""
 while True:
@@ -37,5 +37,5 @@ while True:
 print(response)
 
 # On ferme le socket client
-print("Connexion fermée")
+print("Connexion fermee")
 client.close()
