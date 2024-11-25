@@ -24,13 +24,21 @@ public class Server {
     private static PrintWriter out;
     private static StringBuilder response;
 
-    // Partie informations relatives à la base de donnée "arcade"
+    // Partie informations relatives à la base de donnée "arcade" (version intranet)
     private static final String DB_PORT = "5432";
-    private static final String DB_IP = "localhost";
-    private static final String DB_NAME = "arcade";
-    private static final String DB_USER = "etu";
+    private static final String DB_IP = "devwebdb2.etu";
+    private static final String DB_NAME = "db24l3i_tterrie";
+    private static final String DB_USER = "y24l3i_tterrie";
     private static final String DB_PASSWORD = "A123456*";
     private static final String DB_URL = "jdbc:postgresql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME;
+
+    // // Partie informations relatives à la base de donnée "arcade" (version à la maison)
+    // private static final String DB_PORT = "5432";
+    // private static final String DB_IP = "localhost";
+    // private static final String DB_NAME = "arcade";
+    // private static final String DB_USER = "etu";
+    // private static final String DB_PASSWORD = "A123456*";
+    // private static final String DB_URL = "jdbc:postgresql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME;
 
     private static Connection connection;
     private static Statement statement;
