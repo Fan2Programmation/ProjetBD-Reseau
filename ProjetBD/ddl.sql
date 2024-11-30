@@ -80,13 +80,14 @@ CREATE TABLE personnel (
 
 -- Table Joueur
 CREATE TABLE joueur (
-    pseudo_joueur VARCHAR(27) UNIQUE NOT NULL,
+    pseudo_joueur VARCHAR(27) PRIMARY KEY UNIQUE NOT NULL,
     date_inscription_joueur DATE NOT NULL DEFAULT CURRENT_DATE, -- Valeur par défaut = today()
     carte_fidelite_id_joueur VARCHAR(20) UNIQUE,
     points_fidelite_joueur INT NOT NULL DEFAULT 0 CHECK (points_fidelite_joueur >= 0),
     solde_joueur FLOAT NOT NULL DEFAULT 0.00 CHECK (solde_joueur >= 0),
     pseudo_personnel VARCHAR(27) NOT NULL,
     FOREIGN KEY (pseudo_personnel) REFERENCES personnel(pseudo_personnel) ON DELETE CASCADE
+    FOREIGN KEY (pseudo_joueur) REFERENCES identite(pseudo) ON DELETE CASCADE
 );
 
 -- Table Adresse

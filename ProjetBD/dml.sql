@@ -1,7 +1,12 @@
+-- Insertion dans la table Adresse
+INSERT INTO Adresse (id_adresse, numero_et_voie, code_postal, commune, pseudo) VALUES
+('Addr1', '3 RUE LEBON,', '95000', 'CERGY', '2212003'),
+('Addr2', '5 BD DU PORT,', '95000', 'CERGY', '2222003');
+
 -- Insertion dans la table Identite
 INSERT INTO Identite (pseudo, nom, prenom, id_adresse, telephone, email, date_naissance) VALUES
-('2212003', 'TERRIE', 'THIBAULT', 'Addr001', '+33645789125', 'terrie.thibaul@etu.cyu.fr', '2001-04-06'),
-('2222003', 'TRINH', 'GIA TAM', 'Addr002', '+33742168934', 'giatam.trinh@etu.cyu.fr', '1958-03-24');
+('2212003', 'TERRIE', 'THIBAULT', 'Addr1', '+33645789125', 'terrie.thibaul@etu.cyu.fr', '2001-04-06'),
+('2222003', 'TRINH', 'GIA TAM', 'Addr2', '+33742168934', 'giatam.trinh@etu.cyu.fr', '1958-03-24');
 
 -- Insertion dans la table Personnel
 INSERT INTO Personnel (pseudo_personnel, date_embauche_personnel, role_personnel, salaire, status_personnel, conge_date_debut, conge_date_fin) VALUES
@@ -12,11 +17,6 @@ INSERT INTO Personnel (pseudo_personnel, date_embauche_personnel, role_personnel
 INSERT INTO Joueur (pseudo_joueur, date_inscription_joueur, carte_fidelite_id_joueur, points_fidelite_joueur, solde_joueur, pseudo_personnel) VALUES
 ('Derdoublox', '2020-01-01', 'cfhe0003', 2005, 89.79, 'Pers11'),
 ('SupraFox77', '2021-01-01', 'cfst0025', 1249, 53.47, 'Pers21');
-
--- Insertion dans la table Adresse
-INSERT INTO Adresse (id_adresse, numero_et_voie, code_postal, commune, pseudo) VALUES
-('Addr001', '3 RUE LEBON,', '95000', 'CERGY', '2212003'),
-('Addr002', '5 BD DU PORT,', '95000', 'CERGY', '2222003');
 
 -- Insertion dans la table Transaction
 INSERT INTO Transaction (id_transaction, date_transaction, montant_transaction, type_transaction, mode_paiement_transaction, pseudo_joueur) VALUES
