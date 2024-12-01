@@ -5,18 +5,18 @@ import java.util.logging.*;
 
 public class Server {
 
-    // Logger pour le débogage
+    // Logger pour faciliter notre débogage
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
-    // Port par défaut
+    // Valeurs par défaut
     private static final String DEFAULT_IP = "localhost";
     private static final int DEFAULT_PORT = 420;
 
-    // Paramètres du serveur
+    // On donne les valeurs par défaut
     private static String serverIP = DEFAULT_IP;
     private static int serverPort = DEFAULT_PORT;
 
-    // Informations de connexion à la base de données
+    // Informations de connexion à la BDD de alwaysdata
     private static final String DB_PORT = "5432";
     private static final String DB_IP = "postgresql-arcadeagogo.alwaysdata.net";
     private static final String DB_NAME = "arcadeagogo_bd";
@@ -57,7 +57,7 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 logger.info("Client connecté depuis " + clientSocket.getRemoteSocketAddress());
 
-                // Gestion du client dans un nouveau thread
+                // Gestion du client dans un nouveau thread pour pouvoir acceuillir plusieurs connexions  de plusieurs bornes d'arcade !
                 ClientHandler clientHandler = new ClientHandler(clientSocket);
                 new Thread(clientHandler).start();
             }
@@ -77,7 +77,7 @@ public class Server {
         }
     }
 
-    // Classe interne pour gérer les clients
+    // inner-class pour gérer les clients
     private static class ClientHandler implements Runnable {
 
         private Socket clientSocket;
@@ -91,7 +91,7 @@ public class Server {
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
             try {
-                // Définition d'un timeout de 60 secondes
+                // On met un timeout de 60 secondes
                 clientSocket.setSoTimeout(60000);
             } catch (SocketException e) {
                 logger.warning("Impossible de définir le timeout : " + e.getMessage());
@@ -186,7 +186,7 @@ public class Server {
                     // Vérifier si la réservation est pour ce joueur
                     if (isMachineReservedForUser(machineId, username)) {
                         sendMessage("204 Machine reserved for you");
-                        // On continue
+                        // Si oui on continue
                         break;
                     } else {
                         sendMessage("406 Machine reserved for another user");
@@ -226,9 +226,9 @@ public class Server {
             }
         }
 
-        // Méthode pour lire une ligne avec limitation de taille
+        // Méthode pour lire une ligne de réponse client
         private String readLine() throws IOException {
-            char[] buffer = new char[MAX_MESSAGE_SIZE];
+            char[] buffer = new char[MAX_MESSAGE_SIZE]; // on met la taille max pour un message définie plus haut
             int charsRead = in.read(buffer);
             if (charsRead == -1) {
                 throw new IOException("Client déconnecté");
@@ -348,7 +348,7 @@ public class Server {
             }
         }
 
-        // **Nouvelle méthode pour mettre à jour le statut de la machine**
+        // Méthode pour mettre à jour le statut de la machine
         private void updateMachineStatus(String machineId, String newStatus) throws SQLException {
             String query = "UPDATE machine SET statut_machine = ? WHERE id_machine = ?";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
@@ -359,7 +359,7 @@ public class Server {
             }
         }
 
-        // Méthode pour fermer les ressources
+        // Méthode pour fermer toutes les ressources correctement et éviter de la fuite de mémoire
         private void closeEverything() {
             try {
                 if (out != null) out.close();

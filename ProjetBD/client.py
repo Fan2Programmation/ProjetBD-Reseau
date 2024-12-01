@@ -7,12 +7,12 @@ import logging
 import argparse
 import time
 
-# Configuration du logger
+# Logger pour pouvoir deboguer facilement
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Paramètres de timeout pour éviter que le client reste bloqué
-TIMEOUT_CONNECTION = 10  # Timeout pour la connexion
-TIMEOUT_RECEIVE = 2      # Timeout pour la réception des données (ajustez si nécessaire)
+# Les differentes valeurs de timeout
+TIMEOUT_CONNECTION = 10  # Pour la connexion
+TIMEOUT_RECEIVE = 2      # Pour réceptionner les données
 
 def parse_arguments():
     """Analyse les arguments de ligne de commande pour obtenir l'adresse IP et le port."""
@@ -21,14 +21,14 @@ def parse_arguments():
     parser.add_argument('--port', type=int, default=420, help="Port du serveur (par défaut: 420)")
     args = parser.parse_args()
 
-    # Vérification des paramètres
+    # On verifie que le port est correct
     if not (0 <= args.port <= 65535):
         logging.error("Le port doit être compris entre 0 et 65535.")
         sys.exit(1)
     return args.ip, args.port
 
 def create_client_socket(adresseIP, port):
-    """Crée et retourne un socket client avec gestion des erreurs."""
+    """Crée un socket client."""
     try:
         client_socket = socket.create_connection((adresseIP, port), timeout=TIMEOUT_CONNECTION)
         logging.info(f"Connecté au serveur {adresseIP}:{port}.")
@@ -49,20 +49,20 @@ def create_client_socket(adresseIP, port):
 def receive_responses(sock):
     """Reçoit toutes les lignes envoyées par le serveur."""
     messages = []
-    sock.setblocking(0)  # Met le socket en mode non bloquant
+    sock.setblocking(0)
     start_time = time.time()
     data = b""
     while True:
-        # Vérifie si le timeout est dépassé
+        # Vérifie si le timeout est dépassé grâce à la bibliothèque time !
         if time.time() - start_time > TIMEOUT_RECEIVE:
             break
         try:
             chunk = sock.recv(4096)
             if chunk:
                 data += chunk
-                start_time = time.time()  # Reset du timer après réception de données
+                start_time = time.time()  # Reset du timer après la réception de données
             else:
-                # Si recv retourne une chaîne vide, la connexion est fermée
+                # Si recv retourne une chaîne vide, on sort de la boucle
                 break
         except BlockingIOError:
             # Aucun data disponible pour le moment
@@ -72,7 +72,7 @@ def receive_responses(sock):
             logging.error(f"Erreur lors de la réception des données : {e}")
             break
 
-    # Décodage des données reçues et séparation par lignes
+    # on décode et on réagence les lignes reçues si il y en a eu plusieurs
     if data:
         try:
             messages = data.decode('utf-8').split('\n')
@@ -82,12 +82,13 @@ def receive_responses(sock):
     return messages
 
 def main():
-    """Fonction principale du client."""
-    adresseIP, port = parse_arguments()
-    client_socket = create_client_socket(adresseIP, port)
+    """Fonction principale"""
+    adresseIP, port = parse_arguments() #on recup l'adresse ip et le port
+    client_socket = create_client_socket(adresseIP, port) # on cree le socket client
 
     try:
-        # Lecture du message de bienvenue si disponible
+        # Lecture du message de bienvenue si il y en a un, on insiste sur la modulabilité de notre client qui peut aussi fonctionner
+        # avec un serveur qui n'envoie pas de message de bienvenue
         welcome_messages = receive_responses(client_socket)
         if welcome_messages:
             for message in welcome_messages:
@@ -96,13 +97,13 @@ def main():
             logging.info("Aucun message de bienvenue reçu.")
 
         while True:
-            # Demande de l'entrée utilisateur
+            # On demande à l'utilisateur d'entrer quelque chose
             message = input("Entrez votre message (ou 'exit' pour quitter) : ").strip()
             if message.lower() == "exit":
                 logging.info("Fermeture de la connexion.")
                 break
 
-            # Envoi du message au serveur
+            # On envoie ça au serveur
             try:
                 client_socket.sendall((message + '\n').encode('utf-8'))
                 logging.info(f"Message envoyé : {message}")
@@ -110,7 +111,7 @@ def main():
                 logging.error(f"Erreur lors de l'envoi du message : {e}")
                 break
 
-            # Réception des réponses du serveur
+            # Puis on reçoit la ou les réponses du serveur !
             responses = receive_responses(client_socket)
             if responses:
                 for response in responses:
