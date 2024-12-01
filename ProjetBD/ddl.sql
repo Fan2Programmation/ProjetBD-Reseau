@@ -130,7 +130,7 @@ CREATE TABLE machine (
     nom_machine VARCHAR(100) NOT NULL,
     emplacement_machine VARCHAR(50) NOT NULL,
     date_installation_machine DATE NOT NULL,
-    statut_machine VARCHAR(50) NOT NULL CHECK (statut_machine IN ('disponible', 'maintenance', 'hors-service', 'occupee')),
+    statut_machine VARCHAR(50) NOT NULL CHECK (statut_machine IN ('disponible', 'maintenance', 'hors-service', 'occupee', 'reservee')),
     nom_du_sav_machine VARCHAR(50) NOT NULL,
     numero_du_sav_machine VARCHAR(15) UNIQUE NOT NULL CHECK (numero_du_sav_machine ~ '^\+?[0-9]+$'),
     pseudo_personnel VARCHAR(27) NOT NULL,
@@ -167,7 +167,7 @@ CREATE TABLE session (
     pseudo_joueur VARCHAR(27) NOT NULL,
     date_heure_debut TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_heure_fin TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    score INT NOT NULL CHECK (score >= 0),
+    score INT NOT NULL DEFAULT 0 CHECK (score >= 0),
     FOREIGN KEY (id_machine) REFERENCES machine(id_machine) ON DELETE CASCADE,
     FOREIGN KEY (pseudo_joueur) REFERENCES joueur(pseudo_joueur) ON DELETE CASCADE
 );
