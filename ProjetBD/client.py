@@ -97,27 +97,31 @@ def main():
             logging.info("Aucun message de bienvenue reçu.")
 
         while True:
-            # On demande à l'utilisateur d'entrer quelque chose
-            message = input("Entrez votre message (ou 'exit' pour quitter) : ").strip()
-            if message.lower() == "exit":
-                logging.info("Fermeture de la connexion.")
-                break
-
-            # On envoie ça au serveur
             try:
-                client_socket.sendall((message + '\n').encode('utf-8'))
-                logging.info(f"Message envoyé : {message}")
-            except Exception as e:
-                logging.error(f"Erreur lors de l'envoi du message : {e}")
-                break
+                # On demande à l'utilisateur d'entrer quelque chose
+                message = input("Entrez votre message (ou 'exit' pour quitter) : ").strip()
+                if message.lower() == "exit":
+                    logging.info("Fermeture de la connexion.")
+                    break
 
-            # Puis on reçoit la ou les réponses du serveur !
-            responses = receive_responses(client_socket)
-            if responses:
-                for response in responses:
-                    print(response)
-            else:
-                logging.warning("Pas de réponse du serveur.")
+                # On envoie ça au serveur
+                try:
+                    client_socket.sendall((message + '\n').encode('utf-8'))
+                    logging.info(f"Message envoyé : {message}")
+                except Exception as e:
+                    logging.error(f"Erreur lors de l'envoi du message : {e}")
+                    break
+
+                # Puis on reçoit la ou les réponses du serveur !
+                responses = receive_responses(client_socket)
+                if responses:
+                    for response in responses:
+                        print(response)
+                else:
+                    logging.warning("Pas de réponse du serveur.")
+            except KeyboardInterrupt:
+                logging.info("Interruption du programme par l'utilisateur (CTRL+C). Fermeture de la connexion.")
+                break
 
     finally:
         client_socket.close()
