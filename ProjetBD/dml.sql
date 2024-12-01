@@ -15,6 +15,14 @@ VALUES
     ('mlteacher', 'LEMAIRE', 'Marc', 'Addr3', '+33628990304', 'marc.lemaire@cyu.fr', '1963-08-12'),
     ('f0urmiBaluch0n', 'FOURMI', 'Yves', 'Addr4', '+33699120031', 'fourmi.baluchon@fourmilliere.com', '2023-12-13');
 
+CREATE TABLE utilisateurs (
+    id SERIAL PRIMARY KEY,
+    pseudo VARCHAR(50) UNIQUE NOT NULL,
+    mot_de_passe VARCHAR(255) NOT NULL,
+    date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pseudo) REFERENCES identite(pseudo)
+);
+
 -- Table Personnel
 INSERT INTO personnel (pseudo_personnel, date_embauche_personnel, role_personnel, salaire, status_personnel, conge_date_debut, conge_date_fin) 
 VALUES

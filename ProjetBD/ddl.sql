@@ -68,6 +68,15 @@ CREATE TABLE identite (
     FOREIGN KEY (id_adresse) REFERENCES adresse(id_adresse)
 );
 
+-- Table Utilisateurs
+CREATE TABLE utilisateurs (
+    pseudo VARCHAR(27) PRIMARY KEY UNIQUE NOT NULL,
+    mot_de_passe VARCHAR(255) NOT NULL,
+    date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pseudo) REFERENCES identite(pseudo) ON DELETE CASCADE
+);
+
+
 -- Table Personnel
 CREATE TABLE personnel (
     pseudo_personnel VARCHAR(27) PRIMARY KEY,

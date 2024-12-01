@@ -27,7 +27,7 @@
 
     <head>
         <title>Page de connexion</title>
-        <meta charset "utf-8">
+        <meta charset="utf-8">
         <meta name="titre" content="Arcade à GOGO"/>
         <meta name="description" content="Arcade à GOGO"/>
         <meta name="auteur" content="22302932, zacky, et tibsous"/>
