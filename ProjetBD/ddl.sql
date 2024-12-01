@@ -132,7 +132,7 @@ CREATE TABLE machine (
     date_installation_machine DATE NOT NULL,
     statut_machine VARCHAR(50) NOT NULL CHECK (statut_machine IN ('disponible', 'maintenance', 'hors-service', 'occupee', 'reservee')),
     nom_du_sav_machine VARCHAR(50) NOT NULL,
-    numero_du_sav_machine VARCHAR(15) UNIQUE NOT NULL CHECK (numero_du_sav_machine ~ '^\+?[0-9]+$'),
+    numero_du_sav_machine VARCHAR(15) NOT NULL CHECK (numero_du_sav_machine ~ '^\+?[0-9]+$'),
     pseudo_personnel VARCHAR(27) NOT NULL,
     id_reservation VARCHAR(7),
     FOREIGN KEY (pseudo_personnel) REFERENCES personnel(pseudo_personnel) ON DELETE CASCADE,

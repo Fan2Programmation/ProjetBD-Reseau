@@ -3,16 +3,16 @@
 
 import socket
 import sys
-import time
 import logging
 import argparse
+import time
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Paramètres de timeout pour éviter que le client reste bloqué
-TIMEOUT_CONNECTION = 10  # 10 secondes pour se connecter
-TIMEOUT_RECEIVE = 5      # 5 secondes pour attendre une réponse du serveur
+TIMEOUT_CONNECTION = 10  # Timeout pour la connexion
+TIMEOUT_RECEIVE = 2      # Timeout pour la réception des données (ajustez si nécessaire)
 
 def parse_arguments():
     """Analyse les arguments de ligne de commande pour obtenir l'adresse IP et le port."""
@@ -30,119 +30,97 @@ def parse_arguments():
 def create_client_socket(adresseIP, port):
     """Crée et retourne un socket client avec gestion des erreurs."""
     try:
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
-        client.settimeout(TIMEOUT_CONNECTION)  # On définit un timeout pour la connexion
-        client.connect((adresseIP, port))
+        client_socket = socket.create_connection((adresseIP, port), timeout=TIMEOUT_CONNECTION)
         logging.info(f"Connecté au serveur {adresseIP}:{port}.")
-        return client
+        return client_socket
     except socket.gaierror:
         logging.error("Erreur : L'adresse IP ou le nom de domaine est invalide.")
         sys.exit(1)
     except socket.timeout:
         logging.error("Erreur : Le serveur est inaccessible ou trop lent.")
         sys.exit(1)
-    except socket.error as e:
-        logging.error(f"Erreur réseau : {e}")
+    except ConnectionRefusedError:
+        logging.error("Erreur : Le serveur refuse la connexion. Assurez-vous que le serveur est en ligne.")
+        sys.exit(1)
+    except Exception as e:
+        logging.error(f"Erreur de connexion : {e}")
         sys.exit(1)
 
-def send_message(client, message):
-    """Envoie un message au serveur."""
-    try:
-        client.send((message + "\n").encode("utf-8"))
-        logging.info(f"Message envoyé : {message}")
-    except socket.error as e:
-        logging.error(f"Erreur lors de l'envoi du message : {e}")
-        client.close()
-        sys.exit(1)
-
-def receive_response(client, timeout=TIMEOUT_RECEIVE, exit_on_timeout=True):
-    """Réceptionne la réponse du serveur.
-
-    Args:
-        client (socket.socket): Le socket client.
-        timeout (float): Le délai d'attente pour la réception.
-        exit_on_timeout (bool): Si True, quitte le programme en cas de timeout.
-                                Si False, retourne None en cas de timeout.
-
-    Returns:
-        str: La réponse du serveur, ou None si aucune réponse reçue.
-    """
-    try:
-        client.settimeout(timeout)
-        response = ""
-        while True:
-            data = client.recv(1024)
-            if not data:
-                logging.warning("Le serveur a fermé la connexion.")
-                client.close()
-                sys.exit(1)
-            response += data.decode("utf-8")
-            if '\n' in response:
+def receive_responses(sock):
+    """Reçoit toutes les lignes envoyées par le serveur."""
+    messages = []
+    sock.setblocking(0)  # Met le socket en mode non bloquant
+    start_time = time.time()
+    data = b""
+    while True:
+        # Vérifie si le timeout est dépassé
+        if time.time() - start_time > TIMEOUT_RECEIVE:
+            break
+        try:
+            chunk = sock.recv(4096)
+            if chunk:
+                data += chunk
+                start_time = time.time()  # Reset du timer après réception de données
+            else:
+                # Si recv retourne une chaîne vide, la connexion est fermée
                 break
-        logging.info(f"Réponse du serveur : {response.strip()}")
-        return response.strip()
-    except socket.timeout:
-        if exit_on_timeout:
-            logging.error("Erreur : Délai d'attente dépassé pour la réponse du serveur.")
-            client.close()
-            sys.exit(1)
-        else:
-            logging.info("Aucun message reçu dans le délai imparti.")
-            return None
-    except socket.error as e:
-        logging.error(f"Erreur réseau lors de la réception : {e}")
-        client.close()
-        sys.exit(1)
+        except BlockingIOError:
+            # Aucun data disponible pour le moment
+            time.sleep(0.1)  # Attend un court instant avant de réessayer
+            continue
+        except Exception as e:
+            logging.error(f"Erreur lors de la réception des données : {e}")
+            break
+
+    # Décodage des données reçues et séparation par lignes
+    if data:
+        try:
+            messages = data.decode('utf-8').split('\n')
+            messages = [msg.strip() for msg in messages if msg.strip()]
+        except UnicodeDecodeError as e:
+            logging.error(f"Erreur de décodage des données : {e}")
+    return messages
 
 def main():
-    """Fonction principale pour la gestion de la communication avec le serveur."""
-    # Analyse des arguments de ligne de commande
+    """Fonction principale du client."""
     adresseIP, port = parse_arguments()
-
-    # Créer le socket client
-    client = create_client_socket(adresseIP, port)
-
-    # Tenter de lire un message de bienvenue
-    welcome_message = receive_response(client, timeout=1, exit_on_timeout=False)
-    if welcome_message:
-        print(f"Message du serveur : {welcome_message}")
-    else:
-        logging.info("Aucun message de bienvenue reçu du serveur.")
-
-    # Remettre le timeout pour les réceptions suivantes
-    client.settimeout(TIMEOUT_RECEIVE)
+    client_socket = create_client_socket(adresseIP, port)
 
     try:
-        # Boucle principale d'envoi/réception
+        # Lecture du message de bienvenue si disponible
+        welcome_messages = receive_responses(client_socket)
+        if welcome_messages:
+            for message in welcome_messages:
+                print(message)
+        else:
+            logging.info("Aucun message de bienvenue reçu.")
+
         while True:
-            message = input("Entrez votre message (ou 'exit' pour quitter) : ")
-            if message.strip().lower() == "exit":
-                logging.info("Déconnexion du serveur demandée par l'utilisateur.")
-                send_message(client, "exit")
+            # Demande de l'entrée utilisateur
+            message = input("Entrez votre message (ou 'exit' pour quitter) : ").strip()
+            if message.lower() == "exit":
+                logging.info("Fermeture de la connexion.")
                 break
-            elif not message.strip():
-                logging.warning("Le message ne peut pas être vide.")
-                continue
 
-            # Vérification des données avant envoi (sécurité)
-            if len(message.encode('utf-8')) > 1024:
-                logging.warning("Le message est trop long et ne sera pas envoyé.")
-                continue
+            # Envoi du message au serveur
+            try:
+                client_socket.sendall((message + '\n').encode('utf-8'))
+                logging.info(f"Message envoyé : {message}")
+            except Exception as e:
+                logging.error(f"Erreur lors de l'envoi du message : {e}")
+                break
 
-            send_message(client, message)  # Envoi du message
-            response = receive_response(client)  # Réception de la réponse
+            # Réception des réponses du serveur
+            responses = receive_responses(client_socket)
+            if responses:
+                for response in responses:
+                    print(response)
+            else:
+                logging.warning("Pas de réponse du serveur.")
 
-            # Traitement de la réponse (modulaire)
-            print(f"Réponse du serveur : {response}")
-
-        # Fermeture propre de la connexion
-        client.close()
+    finally:
+        client_socket.close()
         logging.info("Connexion fermée.")
-
-    except KeyboardInterrupt:
-        logging.info("Connexion fermée par l'utilisateur (interruption clavier).")
-        client.close()
-        sys.exit(0)
 
 if __name__ == "__main__":
     main()

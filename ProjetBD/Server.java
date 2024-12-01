@@ -86,7 +86,7 @@ public class Server {
         private Connection connection;
 
         // Taille maximale du message
-        private static final int MAX_MESSAGE_SIZE = 1024;
+        private static final int MAX_MESSAGE_SIZE = 27; // Le mot le plus long envoyé par le client peut-être un pseudonyme de 27 caractères
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -292,12 +292,13 @@ public class Server {
 
         // Méthode pour vérifier si la machine réservée est pour le joueur
         private boolean isMachineReservedForUser(String machineId, String username) throws SQLException {
-            String query = "SELECT pseudo_joueur FROM reservation WHERE id_machine = ? AND status_reservation = 'reservee'";
+            String query = "SELECT pseudo_joueur FROM reservation WHERE id_machine = ? AND status_reservation = 'en_cours'";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setString(1, machineId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         String reservedUsername = rs.getString("pseudo_joueur");
+                        logger.info("La machine est reservee pour " + reservedUsername);
                         return reservedUsername.equals(username);
                     }
                 }
