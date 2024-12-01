@@ -1,41 +1,89 @@
-#!usr/bin/python3
-# -*- coding: UTF-8 -*-
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*- 
 
-# Bibliothèque pour gérer les connexions réseaux
 import socket
+import sys
+import time
 
-# Adresse IP du socket serveur
+# Adresse IP et port du serveur
 adresseIP = "localhost"
-# Port du socket serveur
 port = 420
-# Initialise un socket
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
-# Le socket client se connecte
-client.connect((adresseIP, port))
-print("Connecte au serveur")
 
-message = ""
-while True:
-    message = input("> ")  # Demande à l'utilisateur d'entrer une ligne
+# Paramètres de timeout pour éviter que le client reste bloqué
+TIMEOUT_CONNECTION = 10  # 10 secondes pour se connecter
+TIMEOUT_RECEIVE = 5  # 5 secondes pour attendre une réponse du serveur
+
+def create_client_socket():
+    """Crée et retourne un socket client avec gestion des erreurs."""
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
+        client.settimeout(TIMEOUT_CONNECTION)  # On définit un timeout pour la connexion
+        client.connect((adresseIP, port))
+        print("Connecté au serveur.")
+        return client
+    except socket.timeout:
+        print("Erreur : Le serveur est inaccessible ou trop lent.")
+        sys.exit(1)
+    except socket.error as e:
+        print(f"Erreur réseau : {e}")
+        sys.exit(1)
+
+def send_message(client, message):
+    """Envoie un message au serveur et attend la confirmation."""
+    try:
+        client.send((message + "\n").encode("utf-8"))
+        print(f"Message envoyé : {message}")
+    except socket.error as e:
+        print(f"Erreur lors de l'envoi du message : {e}")
+        client.close()
+        sys.exit(1)
+
+def receive_response(client):
+    """Réceptionne la réponse du serveur."""
+    try:
+        response = ""
+        while True:
+            data = client.recv(255)
+            if not data:
+                break
+            response += data.decode("utf-8")
+        return response
+    except socket.timeout:
+        print("Erreur : Délai d'attente dépassé pour la réponse du serveur.")
+        client.close()
+        sys.exit(1)
+    except socket.error as e:
+        print(f"Erreur réseau lors de la réception : {e}")
+        client.close()
+        sys.exit(1)
+
+def main():
+    """Fonction principale pour la gestion de la communication avec le serveur."""
+    # Créer le socket client
+    client = create_client_socket()
+
+    try:
+        # Première interaction avec le serveur (message d'accueil)
+        message = input("Entrez votre message (Appuyez sur Entrée pour envoyer) : ")
+        while message.strip().lower() != "exit":
+            send_message(client, message)  # Envoi du message
+            response = receive_response(client)  # Réception de la réponse
+            print("Réponse du serveur : ", response)
+            
+            message = input("Entrez votre message (Appuyez sur Entrée pour envoyer) : ")
+
+        print("Déconnexion du serveur.")
+        client.send("exit\n".encode("utf-8"))  # Envoie de 'exit' pour signifier la déconnexion
+        response = receive_response(client)  # Réponse du serveur à la déconnexion
+        print(response)
     
-    # Si le message est vide (juste un retour à la ligne), on arrête l'envoi des messages
-    if message.strip() == "":
-        client.send("\n".encode("utf-8"))  # Envoyer un retour à la ligne vide pour indiquer la fin
-        break
+    except KeyboardInterrupt:
+        print("\nConnexion fermée par l'utilisateur.")
+    
+    finally:
+        # Fermeture du socket client
+        client.close()
+        print("Connexion fermée.")
 
-    client.send((message + "\n").encode("utf-8"))  # Envoi du message avec un saut de ligne
-
-# Maintenant qu'on a terminé d'envoyer toutes les lignes, on attend la réponse du serveur
-response = ""
-while True:
-    reponse = client.recv(255)
-    if not reponse:
-        break
-    response += reponse.decode("utf-8")
-
-# On affiche la réponse complète du serveur
-print(response)
-
-# On ferme le socket client
-print("Connexion fermee")
-client.close()
+if __name__ == "__main__":
+    main()
