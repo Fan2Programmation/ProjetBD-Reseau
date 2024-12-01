@@ -11,16 +11,18 @@ GROUP BY pseudo_joueur
 ORDER BY meilleur_score DESC
 LIMIT 10;
 
--- 2. Obtenir les statistiques d'un joueur spécifique
--- Description :
-
--- Cette requête fournit le nombre total de sessions jouées par un joueur et son score moyen. Elle utilise les fonctions d'agrégation COUNT(*) pour compter les sessions et AVG(score) pour calculer le score moyen, filtrées par le pseudo_joueur.
+-- 2. Requête pour obtenir les machines qui ont été réservées par un joueur spécifique et qui sont actuellement disponibles :
 
 -- Requête SQL :
 
-SELECT COUNT(*) AS nombre_de_sessions, AVG(score) AS score_moyen
-FROM session
-WHERE pseudo_joueur = 'pseudo_du_joueur';
+SELECT m.id_machine, m.statut_machine
+FROM machine m
+WHERE m.id_machine IN (
+    SELECT r.id_machine
+    FROM reservation r
+    WHERE r.pseudo_joueur = 'Tibsous' AND r.status_reservation = 'finie'
+)
+AND m.statut_machine = 'disponible';
 
 -- 3. Obtenir les statistiques d'utilisation de chaque machine
 -- Description :
@@ -108,12 +110,13 @@ FROM reservation
 WHERE pseudo_joueur = 'pseudo_du_joueur'
 AND status_reservation IN ('en_attente', 'confirmee');
 
--- 10. Calculer le solde total de tous les joueurs
--- Description :
-
--- Cette requête calcule le montant total des crédits disponibles sur les comptes de tous les joueurs. Elle utilise la fonction d'agrégation SUM(solde_joueur).
+-- 10. Requête pour obtenir les joueurs ayant effectué des transactions d'un montant supérieur à la moyenne de toutes les transactions :
 
 -- Requête SQL :
-
-SELECT SUM(solde_joueur) AS solde_total
-FROM joueur;
+SELECT j.pseudo_joueur, SUM(t.montant_transaction) AS total_transactions
+FROM joueur j
+JOIN transaction t ON j.pseudo_joueur = t.pseudo_joueur
+WHERE t.montant_transaction > (
+    SELECT AVG(montant_transaction) FROM transaction
+)
+GROUP BY j.pseudo_joueur;
