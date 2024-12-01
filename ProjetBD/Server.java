@@ -9,18 +9,19 @@ public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
     // Port par défaut
+    private static final String DEFAULT_IP = "localhost";
     private static final int DEFAULT_PORT = 420;
 
     // Paramètres du serveur
-    private static String serverIP = "localhost";
+    private static String serverIP = DEFAULT_IP;
     private static int serverPort = DEFAULT_PORT;
 
     // Informations de connexion à la base de données
     private static final String DB_PORT = "5432";
-    private static final String DB_IP = "localhost";
-    private static final String DB_NAME = "arcade";
-    private static final String DB_USER = "etu";
-    private static final String DB_PASSWORD = "A123456*";
+    private static final String DB_IP = "postgresql-arcadeagogo.alwaysdata.net";
+    private static final String DB_NAME = "arcadeagogo_bd";
+    private static final String DB_USER = "arcadeagogo";
+    private static final String DB_PASSWORD = "suprafox77";
     private static final String DB_URL = "jdbc:postgresql://" + DB_IP + ":" + DB_PORT + "/" + DB_NAME;
 
     public static void main(String[] args) {
