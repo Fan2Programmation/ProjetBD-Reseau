@@ -46,7 +46,7 @@ VALUES
 INSERT INTO reservation (date_debut_reservation, date_fin_reservation, status_reservation, pseudo_joueur, id_machine)
 VALUES
     ('2024-09-18 14:30:00', '2024-09-18 17:30:00', 'finie', 'mlteacher', 'Mach1'),
-    ('2024-12-18 19:00:00', '2024-06-18 21:00:00', 'confirmee', 'Tibsous', 'Mach2');
+    ('2024-12-18 19:00:00', '2024-06-18 21:00:00', 'a_venir', 'Tibsous', 'Mach2');
 
 -- Table Jeu
 INSERT INTO jeu (nom_jeu, categorie_jeu, date_creation_jeu, id_machine)

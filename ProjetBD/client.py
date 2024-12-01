@@ -7,7 +7,7 @@ import socket
 # Adresse IP du socket serveur
 adresseIP = "localhost"
 # Port du socket serveur
-port = 8080
+port = 420
 # Initialise un socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP
 # Le socket client se connecte

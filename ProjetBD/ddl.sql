@@ -118,7 +118,7 @@ CREATE TABLE reservation (
     id_reservation VARCHAR(7) PRIMARY KEY DEFAULT 'Res' || nextval('res_seq'),
     date_debut_reservation DATE NOT NULL,
     date_fin_reservation DATE NOT NULL,
-    status_reservation VARCHAR(27) NOT NULL CHECK (status_reservation IN ('en_attente', 'confirmee', 'annulee', 'finie')),
+    status_reservation VARCHAR(27) NOT NULL CHECK (status_reservation IN ('a_venir', 'en_cours', 'finie')),
     pseudo_joueur VARCHAR(27) NOT NULL,
     id_machine VARCHAR(8) NOT NULL,
     FOREIGN KEY (pseudo_joueur) REFERENCES joueur(pseudo_joueur) ON DELETE CASCADE
@@ -165,8 +165,8 @@ CREATE TABLE session (
     id_session VARCHAR(8) PRIMARY KEY DEFAULT 'Sess' || nextval('sess_seq'),
     id_machine VARCHAR(8) NOT NULL,
     pseudo_joueur VARCHAR(27) NOT NULL,
-    date_heure_debut DATE NOT NULL DEFAULT CURRENT_DATE,
-    date_heure_fin DATE NOT NULL DEFAULT CURRENT_DATE,
+    date_heure_debut TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_heure_fin TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     score INT NOT NULL CHECK (score >= 0),
     FOREIGN KEY (id_machine) REFERENCES machine(id_machine) ON DELETE CASCADE,
     FOREIGN KEY (pseudo_joueur) REFERENCES joueur(pseudo_joueur) ON DELETE CASCADE
