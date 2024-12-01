@@ -172,6 +172,7 @@ public class Server {
 
             // Vérification du statut de la machine
             String machineStatus = getMachineStatus(machineId);
+            logger.info("Statut actuel de la machine '" + machineId + "' : '" + machineStatus + "'");
             switch (machineStatus) {
                 case "disponible":
                     sendMessage("203 Machine available");
@@ -191,8 +192,11 @@ public class Server {
                         sendMessage("406 Machine reserved for another user");
                         return;
                     }
+                case "occupee":
+                    sendMessage("407 Machine currently occupied");
+                    return;
                 default:
-                    sendMessage("407 Unknown machine status");
+                    sendMessage("408 Unknown machine status");
                     return;
             }
 
@@ -200,7 +204,7 @@ public class Server {
             sendMessage("Souhaitez-vous payer 5 crédits pour 1 heure de jeu ? Y/n");
             String paymentResponse = readLine();
             if (paymentResponse == null || paymentResponse.equalsIgnoreCase("n")) {
-                sendMessage("408 Payment declined");
+                sendMessage("409 Payment declined");
                 return;
             } else if (paymentResponse.equalsIgnoreCase("Y")) {
                 // Vérification du solde du joueur
@@ -209,13 +213,15 @@ public class Server {
                     decrementCredits(username, 5);
                     // Ajouter une session de jeu
                     addGameSession(username, machineId, 1); // 1 heure de jeu
+                    // Mettre à jour le statut de la machine à 'occupee'
+                    updateMachineStatus(machineId, "occupee");
                     sendMessage("200 Payment successful. Amusez-vous bien!");
                 } else {
-                    sendMessage("409 Insufficient credits");
+                    sendMessage("410 Insufficient credits");
                     return;
                 }
             } else {
-                sendMessage("410 Invalid payment response");
+                sendMessage("411 Invalid payment response");
                 return;
             }
         }
@@ -338,6 +344,17 @@ public class Server {
                 ps.setInt(5, 0); // Score initial
 
                 ps.executeUpdate();
+            }
+        }
+
+        // **Nouvelle méthode pour mettre à jour le statut de la machine**
+        private void updateMachineStatus(String machineId, String newStatus) throws SQLException {
+            String query = "UPDATE machine SET statut_machine = ? WHERE id_machine = ?";
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+                ps.setString(1, newStatus);
+                ps.setString(2, machineId);
+                ps.executeUpdate();
+                logger.info("Statut de la machine " + machineId + " mis à jour en '" + newStatus + "'");
             }
         }
 
