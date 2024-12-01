@@ -1,4 +1,4 @@
--- 1. Afficher les meilleurs scores de tous les joueurs
+-- 1. Afficher les meilleurs scores en temps réel de tous les joueurs
 -- Description :
 
 -- Cette requête permet d'obtenir le meilleur score de chaque joueur. Elle utilise la fonction d'agrégation MAX(score) et regroupe les résultats par pseudo_joueur. Les résultats sont triés par ordre décroissant des scores pour afficher les meilleurs en premier.
