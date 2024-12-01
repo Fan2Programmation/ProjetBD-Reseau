@@ -130,7 +130,7 @@ CREATE TABLE machine (
     nom_machine VARCHAR(100) NOT NULL,
     emplacement_machine VARCHAR(50) NOT NULL,
     date_installation_machine DATE NOT NULL,
-    statut_machine VARCHAR(50) NOT NULL CHECK (statut_machine IN ('disponible', 'maintenance', 'hors-service')),
+    statut_machine VARCHAR(50) NOT NULL CHECK (statut_machine IN ('disponible', 'maintenance', 'hors-service', 'occupee')),
     nom_du_sav_machine VARCHAR(50) NOT NULL,
     numero_du_sav_machine VARCHAR(15) UNIQUE NOT NULL CHECK (numero_du_sav_machine ~ '^\+?[0-9]+$'),
     pseudo_personnel VARCHAR(27) NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE jeu (
     nom_jeu VARCHAR(100) NOT NULL,
     categorie_jeu VARCHAR(27) NOT NULL,
     date_creation_jeu DATE NOT NULL CHECK (date_creation_jeu <= CURRENT_DATE),
-    meilleur_score INT,
+    meilleur_score INT DEFAULT 0,
     id_machine VARCHAR(8) NOT NULL,
     FOREIGN KEY (id_machine) REFERENCES machine(id_machine) ON DELETE CASCADE
 );
