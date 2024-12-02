@@ -22,53 +22,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 if (isset($_POST['action']) && $_POST['action'] == 'register') {
     $pseudo = sanitize_input($_POST['pseudo']);
     $mdp = sanitize_input($_POST['mdp']);
-    $nom = sanitize_input($_POST['nom']);
-    $prenom = sanitize_input($_POST['prenom']);
-    $telephone = sanitize_input($_POST['telephone']);
-    $email = sanitize_input($_POST['email']);
-    $date_naissance = sanitize_input($_POST['date_naissance']);
-    $numero_et_voie = sanitize_input($_POST['numero_et_voie']);
-    $code_postal = sanitize_input($_POST['code_postal']);
-    $commune = sanitize_input($_POST['commune']);
     
     $hashed_mdp = password_hash($mdp, PASSWORD_DEFAULT);
 
-    if (!empty($pseudo) && !empty($mdp) && !empty($nom) && !empty($prenom) && !empty($telephone) && !empty($email) && !empty($date_naissance) && !empty($numero_et_voie) && !empty($code_postal) && !empty($commune)) {
+    if (!empty($pseudo) && !empty($mdp)) {
         // Vérifier si le pseudo existe déjà
         $query = 'SELECT pseudo FROM utilisateurs WHERE pseudo = $1';
         $result = pg_query_params($dbconn, $query, array($pseudo));
         if (pg_num_rows($result) > 0) {
             $register_error = "Le pseudo existe déjà.";
         } else {
-            // Insérer dans la table adresse
-            $insert_adresse = 'INSERT INTO adresse (numero_et_voie, code_postal, commune) VALUES ($1, $2, $3) RETURNING id_adresse';
-            $adresse_result = pg_query_params($dbconn, $insert_adresse, array($numero_et_voie, $code_postal, $commune));
-            if ($adresse_result && pg_num_rows($adresse_result) == 1) {
-                $adresse_row = pg_fetch_assoc($adresse_result);
-                $id_adresse = $adresse_row['id_adresse'];
-                pg_free_result($adresse_result);
-                
-                // Insérer dans la table identite
-                $insert_identite = 'INSERT INTO identite (pseudo, nom, prenom, id_adresse, telephone, email, date_naissance) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-                $identite_result = pg_query_params($dbconn, $insert_identite, array($pseudo, $nom, $prenom, $id_adresse, $telephone, $email, $date_naissance));
-                if ($identite_result) {
-                    // Insérer dans la table utilisateurs
-                    $insert_utilisateurs = 'INSERT INTO utilisateurs (pseudo, mot_de_passe) VALUES ($1, $2)';
-                    $utilisateur_result = pg_query_params($dbconn, $insert_utilisateurs, array($pseudo, $hashed_mdp));
-                    if ($utilisateur_result) {
-                        $register_success = "Inscription réussie. Vous pouvez maintenant vous connecter.";
-                    } else {
-                        $register_error = "Erreur lors de l'inscription. Veuillez réessayer.";
-                    }
-                } else {
-                    $register_error = "Erreur lors de la création de votre identité. Veuillez réessayer.";
-                }
+            // Insérer dans la table utilisateurs
+            $insert_utilisateurs = 'INSERT INTO utilisateurs (pseudo, mot_de_passe) VALUES ($1, $2)';
+            $utilisateur_result = pg_query_params($dbconn, $insert_utilisateurs, array($pseudo, $hashed_mdp));
+            if ($utilisateur_result) {
+                $register_success = "Inscription réussie. Vous pouvez maintenant vous connecter.";
             } else {
-                $register_error = "Erreur lors de la création de votre adresse. Veuillez réessayer.";
+                $register_error = "Erreur lors de l'inscription. Veuillez réessayer.";
             }
         }
-    } else {
-        $register_error = "Tous les champs sont obligatoires.";
     }
 }
 
@@ -389,12 +361,12 @@ function is_logged_in() {
                     echo "\t\t\t\t\t\t<fieldset style=\"display:inline-block;\">\n";
                         echo "\t\t\t\t\t\t\t<legend>Inscription</legend>\n";
                         echo "\t\t\t\t\t\t\t<div>\n";
-                            echo "\t\t\t\t\t\t\t\t<label for=\"pseudo_register\">Pseudo</label>\n";
-                            echo "\t\t\t\t\t\t\t\t<input type=\"text\" name=\"pseudo\" id=\"pseudo_register\" required/>\n";
+                            echo "\t\t\t\t\t\t\t\t<label for=\"pseudo\">Pseudo</label>\n";
+                            echo "\t\t\t\t\t\t\t\t<input type=\"text\" name=\"pseudo\" id=\"pseudo\" required/>\n";
                         echo "\t\t\t\t\t\t\t</div>\n";
                         echo "\t\t\t\t\t\t\t<div>\n";
-                            echo "\t\t\t\t\t\t\t\t<label for=\"mdp_register\">Mot de passe</label>\n";
-                            echo "\t\t\t\t\t\t\t\t<input type=\"password\" name=\"mdp\" id=\"mdp_register\" required/>\n";
+                            echo "\t\t\t\t\t\t\t\t<label for=\"mdp\">Mot de passe</label>\n";
+                            echo "\t\t\t\t\t\t\t\t<input type=\"password\" name=\"mdp\" id=\"mdp\" required/>\n";
                         echo "\t\t\t\t\t\t\t</div>\n";
                         echo "\t\t\t\t\t\t\t<div>\n";
                             echo "\t\t\t\t\t\t\t\t<input type=\"submit\" value=\"Inscription\"/>\n";
